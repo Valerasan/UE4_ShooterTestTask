@@ -17,17 +17,15 @@ class SHOOTERTASK_API AShooterLauncher : public AShooterBaseWeapon
 public:
 	AShooterLauncher();
 
+	virtual void BeginPlay() override;
+
+
 	virtual void StartFire() override;
+	virtual void StopFire() override;
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
 		TSubclassOf<class AShooterLauncherProjectile> ProjectileClass;
-
-	// UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
-	// UNiagaraComponent* Niagara;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Sound")
-		USoundCue* NoAmmoSound;
 
 	virtual void MakeShot() override;
 	

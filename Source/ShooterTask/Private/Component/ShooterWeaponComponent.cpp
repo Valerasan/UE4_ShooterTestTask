@@ -136,7 +136,7 @@ void UShooterWeaponComponent::EquipWeapon(int32 WeaponIndex)
 void UShooterWeaponComponent::StartFire()
 {
 	const auto Actor = Cast <AShooterPlayerCharacter>(GetOwner());
-	if (!CanFire() || Actor->IsRunning()) return;
+	if (!CanFire()) return;
 	CurrentWeapon->StartFire();
 
 	//UE_LOG(LogWeaponComponent, Warning, TEXT("Fire"));
@@ -230,13 +230,8 @@ bool UShooterWeaponComponent::TryToAddWeapon(TSubclassOf<AShooterBaseWeapon> Wea
 	if (!Chracter || !GetWorld()) return false;
 	
 	// checking if the same weapon
-	for (const auto Weapon : Weapons)
-	{
-		if (Weapon && Weapon->IsA(WeaponType))
-		{
-			return false;
-		}
-	}
+	if (ExistsWeapon(WeaponType)) return false;
+
 	OneWeapon = false;
 	SpawnWeapon(WeaponType);
 	return true;
@@ -248,6 +243,18 @@ void UShooterWeaponComponent::Zoom(bool Enabled)
 	{
 		CurrentWeapon->Zoom(Enabled);
 	}
+}
+
+bool UShooterWeaponComponent::ExistsWeapon(TSubclassOf<AShooterBaseWeapon> CheckWeapon)
+{
+	for (const auto Weapon : Weapons)
+	{
+		if (Weapon && Weapon->IsA(CheckWeapon))
+		{
+			return true;
+		}
+	}
+	return false;
 }
 
 void UShooterWeaponComponent::PlayAnimMontage(UAnimMontage* Animation)

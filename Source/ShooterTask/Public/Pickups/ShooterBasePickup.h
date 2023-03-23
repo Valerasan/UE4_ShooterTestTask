@@ -27,6 +27,9 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pickup")
+		bool CouldBeTakenTest = true;
+
 public:
 	virtual void Tick(float DeltaTime) override;
 	bool CouldBeTaken() const;

@@ -18,11 +18,9 @@ class SHOOTERTASK_API AShooterRifle : public AShooterBaseWeapon
 
 	virtual void StartFire() override;
 	virtual void StopFire() override;
-	virtual void Zoom(bool Enable);
 
 protected:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
-		float TimeBetweenShots = 0.1f;
+
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
 		float DamageAmount = 10.f;
@@ -38,9 +36,6 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "VFX")
 		FString TraceTargetName = "TraceTarget";
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
-		float FOVZoomAngle = 50.f;
 
 	virtual void BeginPlay() override;
 	virtual void MakeShot() override;
@@ -59,7 +54,7 @@ private:
 	void InitFX();
 	void SetFXActive(bool IsActive);
 	void SpawnTraceFX(const FVector& TraceStart, const FVector& TraceEnd);
-
+	void ChangeSound();
 	AController* GetControllerChracter() const;
 
 	float 	DefaultCameraFOV = 90.f;

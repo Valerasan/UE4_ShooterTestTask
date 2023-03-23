@@ -1,0 +1,32 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "Components/ActorComponent.h"
+#include "ShooterRespawnComponent.generated.h"
+
+
+UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+class SHOOTERTASK_API UShooterRespawnComponent : public UActorComponent
+{
+	GENERATED_BODY()
+
+public:
+	// Sets default values for this component's properties
+	UShooterRespawnComponent();
+
+	void Respawn(int32 RespawnTime);
+
+	int32 GetRespawnCountDown() const { return RespawnCountDown; };
+	bool IsRespawnInProgress() const;
+
+
+private:
+	FTimerHandle RespawnTimerHandle;
+	int32 RespawnCountDown = 0;
+
+	void ResspawnTimerUpdate();
+
+		
+};

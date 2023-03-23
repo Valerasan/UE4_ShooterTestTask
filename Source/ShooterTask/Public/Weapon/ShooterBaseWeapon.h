@@ -7,6 +7,7 @@
 #include "ShooterCoreTypes.h"
 #include "ShooterBaseWeapon.generated.h"
 
+DECLARE_MULTICAST_DELEGATE(FOnMakeShootSignature)
 
 
 UCLASS()
@@ -19,6 +20,7 @@ public:
 	AShooterBaseWeapon();
 
 	FOnClipEmptySignature OnClipEmpty;
+	FOnMakeShootSignature MakeShoot;
 
 	virtual void StartFire();
 	virtual void StopFire();
@@ -30,15 +32,13 @@ public:
 	bool CanReload() const;
 
 	// TODO
-	//FWeaponUIData GetUIData() const { return UIData; }
+	//FWeaponUIData GetUIData()
 	FAmmoData GetAmmoData() const { return CurrentAmmo; }
 
 	bool TryToAddAmmo(int32 ClipsAmount);
 	bool IsAmmoEmpty() const;
 	bool IsAmmoFull() const;
 
-	// TODO
-	virtual void Zoom(bool Enable) {};
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
 		UAnimMontage* ReloadAnimMontage;
@@ -54,19 +54,33 @@ protected:
 		float TraceMaxDistance = 1500.f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
+		float TimeBetweenShots = 0.1f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
+		bool bAutofire = true;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
+	int32 LowAmmoSoundPercent = 5;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
 		FAmmoData DefaultAmmo {
 		15, 10, false
 	};
-
-	// TODO
-	//UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
-	//	FWeaponUIData UIData;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "VFX")
 		class UNiagaraSystem* MuzzleFX;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Sound")
 		class USoundCue* FireSound;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Sound")
+	USoundCue* LowAmmo;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Sound")
+	USoundCue* LastBullet;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Sound")
+		USoundCue* NoAmmoSound;
 
 	virtual void BeginPlay() override;
 
@@ -85,9 +99,11 @@ protected:
 	void LogAmmo();
 
 	class UNiagaraComponent* SpawnMuzzleFX();
+	 
+	FAmmoData CurrentAmmo;
 
 private:
-	FAmmoData CurrentAmmo;
+	FTimerHandle ShotTimerHandl;
 
 	bool FireInProgress = false;
 

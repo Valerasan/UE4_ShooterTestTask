@@ -22,13 +22,15 @@ void AShooterRifle::BeginPlay()
 {
 	Super::BeginPlay();
 	check(WeaponFXComponent);
+
+	MakeShoot.AddUObject(this, &AShooterRifle::MakeShot);
 }
 
 void AShooterRifle::StartFire()
 {
 	InitFX();
-	GetWorldTimerManager().SetTimer(ShotTimerHandl, this, &AShooterRifle::MakeShot, TimeBetweenShots, true);
-	MakeShot();
+	Super::StartFire();
+	//GetWorldTimerManager().SetTimer(ShotTimerHandl, this, &AShooterRifle::MakeShot, TimeBetweenShots, true);
 
 	UE_LOG(LogRifle, Warning, TEXT("Rifle Fire"));
 
@@ -36,7 +38,7 @@ void AShooterRifle::StartFire()
 
 void AShooterRifle::StopFire()
 {
-	GetWorldTimerManager().ClearTimer(ShotTimerHandl);
+	Super::StopFire();
 	SetFXActive(false);
 }
 
@@ -90,7 +92,12 @@ void AShooterRifle::MakeShot()
 		WeaponFXComponent->PlayInpactFX(HitResult);
 	}
 	SpawnTraceFX(GetMuzzleWorldLocation(), TraceFXend);
+	ChangeSound();
 	DecreasAmmo();
+	if (CurrentAmmo.Bullets == 0)
+	{
+		UGameplayStatics::SpawnSoundAttached(LastBullet, WeaponMesh, MuzzleSocketName);
+	}
 }
 
 bool AShooterRifle::GetTraceDate(FVector& TraceStart, FVector& TraceEnd) const
@@ -126,7 +133,16 @@ void AShooterRifle::InitFX()
 	}
 	if (!FireAudioComponent)
 	{
-		FireAudioComponent = UGameplayStatics::SpawnSoundAttached(FireSound, WeaponMesh, MuzzleSocketName);
+		if (CurrentAmmo.Bullets > LowAmmoSoundPercent)
+		{
+			
+			FireAudioComponent = UGameplayStatics::SpawnSoundAttached(FireSound, WeaponMesh, MuzzleSocketName);
+		}
+		else
+		{
+			
+			FireAudioComponent = UGameplayStatics::SpawnSoundAttached(LowAmmo, WeaponMesh, MuzzleSocketName);
+		}
 	}
 	SetFXActive(true);
 }
@@ -153,6 +169,36 @@ void AShooterRifle::SpawnTraceFX(const FVector& TraceStart, const FVector& Trace
 	{
 		TraceFXComponent->SetNiagaraVariableVec3(TraceTargetName, TraceEnd);
 	}
+}
+
+void AShooterRifle::ChangeSound()
+{
+	if (FireAudioComponent)
+	{
+		if (CurrentAmmo.Bullets > LowAmmoSoundPercent)
+		{
+			
+			if (FireAudioComponent->Sound->GetFName() == FireSound->GetFName())
+			{
+				UE_LOG(LogRifle, Display, TEXT("Fire sound"));
+				return;
+			}
+			SetFXActive(false);
+			FireAudioComponent = UGameplayStatics::SpawnSoundAttached(FireSound, WeaponMesh, MuzzleSocketName);
+
+		}
+		else
+		{
+			if (FireAudioComponent->Sound->GetFName() == LowAmmo->GetFName())
+			{
+				UE_LOG(LogRifle, Display, TEXT("LowAmmo"));
+				return;
+			}
+			SetFXActive(false);
+			FireAudioComponent = UGameplayStatics::SpawnSoundAttached(LowAmmo, WeaponMesh, MuzzleSocketName);
+		}
+	}
+	SetFXActive(true);
 }
 
 AController* AShooterRifle::GetControllerChracter() const

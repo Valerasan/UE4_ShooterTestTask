@@ -35,6 +35,7 @@ public:
 
 	//TODO
 	void Zoom(bool Enabled);
+	bool ExistsWeapon(TSubclassOf<AShooterBaseWeapon> CheckWeapon);
 
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
@@ -62,7 +63,7 @@ protected:
 	bool CanFire() const;
 	bool CanEquip() const;
 	void EquipWeapon(int32 WeaponIndex);
-
+	
 private:
 	UPROPERTY()
 		UAnimMontage* CurrentReloadAnimMontage = nullptr;

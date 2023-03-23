@@ -39,11 +39,18 @@ void AShooterBaseWeapon::BeginPlay()
 
 void AShooterBaseWeapon::StartFire()
 {
+	if (bAutofire)
+	{
+		GetWorldTimerManager().SetTimer(ShotTimerHandl, this, &AShooterBaseWeapon::MakeShot, TimeBetweenShots, true);
+	}
+	MakeShot();
+
 	FireInProgress = true;
 }
 
 void AShooterBaseWeapon::StopFire()
 {
+	GetWorldTimerManager().ClearTimer(ShotTimerHandl);
 	FireInProgress = false;
 }
 
@@ -52,7 +59,10 @@ bool AShooterBaseWeapon::IsFiring() const
 	return FireInProgress;
 }
 
-void AShooterBaseWeapon::MakeShot() {}
+void AShooterBaseWeapon::MakeShot() 
+{
+	MakeShoot.Broadcast();
+}
 
 
 // get player camera direction

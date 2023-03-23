@@ -59,12 +59,8 @@ void AShooterLauncherProjectile::OnProjectileHit(
 		GetControllerChracter(),					 //
 		DoFullDamage);
 
-	// DrawDebugSphere(GetWorld(), GetActorLocation(), DamageRadius, 24, FColor::Red, false, 5.f);
 
 	WeaponFXComponent->PlayInpactFX(Hit);
-
-	// Destroy();
-	// SetLifeSpan(0.2f);
 
 	SetLifeSpan(0.8f);
 }

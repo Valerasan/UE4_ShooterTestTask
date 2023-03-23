@@ -63,3 +63,8 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
 		UTexture2D* CrossHairIcon;
 };
+
+
+// Health
+DECLARE_MULTICAST_DELEGATE(FOnDeath);
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnHealthChanged, float, float);

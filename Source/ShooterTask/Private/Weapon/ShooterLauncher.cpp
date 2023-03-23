@@ -17,10 +17,23 @@ AShooterLauncher::AShooterLauncher()
 
 }
 
+void AShooterLauncher::BeginPlay()
+{
+	Super::BeginPlay();
+	MakeShoot.AddUObject(this, &AShooterLauncher::MakeShot);
+}
+
 
 void AShooterLauncher::StartFire()
 {
-	MakeShot();
+	Super::StartFire();
+	UE_LOG(LogTemp, Warning, TEXT("Launcher Fire"));
+
+}
+
+void AShooterLauncher::StopFire()
+{
+	Super::StopFire();
 }
 
 void AShooterLauncher::MakeShot()
@@ -56,5 +69,12 @@ void AShooterLauncher::MakeShot()
 	DecreasAmmo();
 	SpawnMuzzleFX();
 
-	UGameplayStatics::SpawnSoundAttached(FireSound, WeaponMesh, MuzzleSocketName);
+	if (CurrentAmmo.Clips == 0)
+	{
+		UGameplayStatics::SpawnSoundAttached(LastBullet, WeaponMesh, MuzzleSocketName);
+	}
+	else
+	{
+		UGameplayStatics::SpawnSoundAttached(FireSound, WeaponMesh, MuzzleSocketName);
+	}
 }

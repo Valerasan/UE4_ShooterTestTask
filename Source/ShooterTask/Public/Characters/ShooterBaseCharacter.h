@@ -14,9 +14,11 @@ public:
 	AShooterBaseCharacter();
 
 protected:
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")
+	class UShooterHealthComponent* HealthComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")
-		class UShooterWeaponComponent* WeaponComponent;
+	class UShooterWeaponComponent* WeaponComponent;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Damage")
 		FVector2D LandedDamageVelocity = FVector2D(900.f, 1200.f);
@@ -45,6 +47,4 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Movement")
 		float GetMovementDirection() const;
 
-private:
-	//void OnStartFire();
 };

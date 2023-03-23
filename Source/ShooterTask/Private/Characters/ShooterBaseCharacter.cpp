@@ -12,6 +12,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundCue.h"
 #include "Component/ShooterWeaponComponent.h"
+#include "Component/ShooterHealthComponent.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogBaseCharacter, All, All);
 
@@ -19,6 +20,8 @@ DEFINE_LOG_CATEGORY_STATIC(LogBaseCharacter, All, All);
 AShooterBaseCharacter::AShooterBaseCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
+
+	HealthComponent = CreateDefaultSubobject<UShooterHealthComponent>("HealthComponent");
 	WeaponComponent = CreateDefaultSubobject<UShooterWeaponComponent>("WeaponComponent");
 }
 
@@ -27,7 +30,13 @@ void AShooterBaseCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+	check(HealthComponent);
+	check(GetCharacterMovement());
 	check(GetMesh());
+
+	OnHealthChanged(HealthComponent->GetHealt(), 0.f);
+	HealthComponent->OnDeath.AddUObject(this, &AShooterBaseCharacter::OnDeath);
+	HealthComponent->OnHealthChanged.AddUObject(this, &AShooterBaseCharacter::OnHealthChanged);
 }
 
 // Called every frame
@@ -54,13 +63,6 @@ float AShooterBaseCharacter::GetMovementDirection() const
 	const auto Degrees = FMath::RadiansToDegrees(AngleBetween);
 	return CrossProduct.IsZero() ? Degrees : Degrees * FMath::Sign(CrossProduct.Z);
 }
-
-// TODO: AI fire
-//void AShooterBaseCharacter::OnStartFire()
-//{
-//	if (IsRunning()) return;
-//	WeaponComponent->StartFire();
-//}
 
 // call when charcter is dead
 void AShooterBaseCharacter::OnDeath()

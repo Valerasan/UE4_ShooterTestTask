@@ -50,8 +50,8 @@ void AShooterBasePickup::Tick(float DeltaTime)
 
 bool AShooterBasePickup::CouldBeTaken() const
 {
-	return !GetWorldTimerManager().IsTimerActive(RespawnTimerHandle);
-	//return CouldBeTakenTest;
+	//return !GetWorldTimerManager().IsTimerActive(RespawnTimerHandle);
+	return CouldBeTakenTest;
 }
 
 bool AShooterBasePickup::GivePikupTo(APawn* PlayrPawn)

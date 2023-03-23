@@ -7,7 +7,7 @@
 
 bool AShooterAmmoPickup::GivePikupTo(APawn* PlayrPawn)
 {
-	//const auto HealthComponent = ShooterUtils::GetShooterPlayerComponent<USTUHealthComponent>(PlayrPawn);
+	//const auto HealthComponent = ShooterUtils::GetShooterPlayerComponent<UShooterHealthComponent>(PlayrPawn);
 	//if (!HealthComponent || HealthComponent->IsDead()) return false;
 
 	const auto WeaponComponent = ShooterUtils::GetShooterPlayerComponent<UShooterWeaponComponent>(PlayrPawn);
