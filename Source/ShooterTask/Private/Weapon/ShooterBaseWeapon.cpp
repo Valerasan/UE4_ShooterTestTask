@@ -55,7 +55,7 @@ bool AShooterBaseWeapon::IsFiring() const
 void AShooterBaseWeapon::MakeShot() {}
 
 
-
+// get player camera direction
 bool AShooterBaseWeapon::GetPlayerViewPoint(FVector& ViewLocation, FRotator& ViewRotation) const
 {
 
@@ -78,11 +78,13 @@ bool AShooterBaseWeapon::GetPlayerViewPoint(FVector& ViewLocation, FRotator& Vie
 	return true;
 }
 
+// help function to get muzzle location 
 FVector AShooterBaseWeapon::GetMuzzleWorldLocation() const
 {
 	return WeaponMesh->GetSocketLocation(MuzzleSocketName);
 }
 
+// calculates the beginning and end of the linetrace
 bool AShooterBaseWeapon::GetTraceDate(FVector& TraceStart, FVector& TraceEnd) const
 {
 	FVector ViewLocation;
@@ -107,6 +109,7 @@ void AShooterBaseWeapon::MakeHit(FHitResult& HitResilt, const FVector& TraceStar
 	GetWorld()->LineTraceSingleByChannel(HitResilt, TraceStart, TraceEnd, ECollisionChannel::ECC_Visibility, CollisionParams);
 }
 
+// Decreas ammo when shooting
 void AShooterBaseWeapon::DecreasAmmo()
 {
 	if (CurrentAmmo.Bullets == 0)
@@ -136,6 +139,7 @@ bool AShooterBaseWeapon::IsAmmoFull() const
 	return CurrentAmmo.Clips == DefaultAmmo.Clips && CurrentAmmo.Bullets == DefaultAmmo.Bullets;
 }
 
+// reloads
 void AShooterBaseWeapon::ChangeClip()
 {
 
@@ -150,6 +154,7 @@ void AShooterBaseWeapon::ChangeClip()
 	CurrentAmmo.Bullets = DefaultAmmo.Bullets;
 }
 
+// checks if the clip needs to be changed
 void AShooterBaseWeapon::IsNeedToReload()
 {
 	if (IsClipEmpty() && !IsAmmoEmpty())
@@ -159,24 +164,31 @@ void AShooterBaseWeapon::IsNeedToReload()
 	}
 }
 
+// checks if there is enough clip to reload and less than normal ammo in clip
 bool AShooterBaseWeapon::CanReload() const
 {
 	return CurrentAmmo.Bullets < DefaultAmmo.Bullets&& CurrentAmmo.Clips > 0;
 }
 
+// trying to reload and get ammo
 bool AShooterBaseWeapon::TryToAddAmmo(int32 ClipsAmount)
 {
+	// if all are full then it comes out
 	if (CurrentAmmo.Infinite || IsAmmoFull() || ClipsAmount <= 0) return false;
 
+	// if there is no ammunition, then it adds N number of clips
 	if (IsAmmoEmpty())
 	{
 		//UE_LOG(LogBaseWeapon, Display, TEXT("Ammo was empty"));
 		CurrentAmmo.Clips = FMath::Clamp(ClipsAmount, 0, DefaultAmmo.Clips + 1);
 		OnClipEmpty.Broadcast(this);
 	}
+	//
 	else if (CurrentAmmo.Clips < DefaultAmmo.Clips)
 	{
 		const auto NextClipsAmmount = CurrentAmmo.Clips + ClipsAmount;
+		// if the difference between the usual number of clips and the next number of clips is greater 
+		// than zero or equal to zero, then we set the next number of clips
 		if (DefaultAmmo.Clips - NextClipsAmmount >= 0)
 		{
 			CurrentAmmo.Clips = NextClipsAmmount;
@@ -198,10 +210,12 @@ bool AShooterBaseWeapon::TryToAddAmmo(int32 ClipsAmount)
 	return true;
 }
 
+// function shows the amount of ammunition
 void AShooterBaseWeapon::LogAmmo()
 {
 	FString AmmoInfo = "Ammo: " + FString::FromInt(CurrentAmmo.Bullets) + " / ";
 	AmmoInfo += CurrentAmmo.Infinite ? "Infinite" : FString::FromInt(CurrentAmmo.Clips);
+	UE_LOG(LogBaseWeapon, Warning, TEXT("%s"), *AmmoInfo);
 }
 
 UNiagaraComponent* AShooterBaseWeapon::SpawnMuzzleFX()

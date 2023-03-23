@@ -21,9 +21,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pickup")
 		float RespawnTime = 5.f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pickup")
-		bool CouldBeTakenTest = true;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
 		class USoundCue* PickupSound;
 

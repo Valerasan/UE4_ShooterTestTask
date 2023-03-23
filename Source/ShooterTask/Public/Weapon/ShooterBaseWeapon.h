@@ -29,6 +29,7 @@ public:
 
 	bool CanReload() const;
 
+	// TODO
 	//FWeaponUIData GetUIData() const { return UIData; }
 	FAmmoData GetAmmoData() const { return CurrentAmmo; }
 
@@ -36,6 +37,7 @@ public:
 	bool IsAmmoEmpty() const;
 	bool IsAmmoFull() const;
 
+	// TODO
 	virtual void Zoom(bool Enable) {};
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
@@ -56,6 +58,7 @@ protected:
 		15, 10, false
 	};
 
+	// TODO
 	//UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
 	//	FWeaponUIData UIData;
 
@@ -65,10 +68,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Sound")
 		class USoundCue* FireSound;
 
-	
-
 	virtual void BeginPlay() override;
-
 
 	virtual void MakeShot();
 	virtual bool GetTraceDate(FVector& TraceStart, FVector& TraceEnd) const;

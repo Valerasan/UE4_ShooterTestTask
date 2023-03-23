@@ -18,12 +18,8 @@ DEFINE_LOG_CATEGORY_STATIC(LogBaseCharacter, All, All);
 // Sets default values
 AShooterBaseCharacter::AShooterBaseCharacter()
 {
-
 	PrimaryActorTick.bCanEverTick = true;
-
 	WeaponComponent = CreateDefaultSubobject<UShooterWeaponComponent>("WeaponComponent");
-
-
 }
 
 // Called when the game starts or when spawned
@@ -32,13 +28,6 @@ void AShooterBaseCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	check(GetMesh());
-
-	//OnHealthChanged(HealthComponent->GetHealt(), 0.f);
-	//HealthComponent->OnDeath.AddUObject(this, &ASTUBaseCharacter::OnDeath);
-	//HealthComponent->OnHealthChanged.AddUObject(this, &ASTUBaseCharacter::OnHealthChanged);
-	//LandedDelegate.AddDynamic(this, &ASTUBaseCharacter::OnGroundLanded);
-
-
 }
 
 // Called every frame
@@ -54,6 +43,8 @@ bool AShooterBaseCharacter::IsRunning() const
 	return false;
 }
 
+//  calculate the angle between the direction of travel and forward vector
+//  to determine which direction the character will run
 float AShooterBaseCharacter::GetMovementDirection() const
 {
 	if (GetVelocity().IsZero()) return 0.f;
@@ -64,35 +55,24 @@ float AShooterBaseCharacter::GetMovementDirection() const
 	return CrossProduct.IsZero() ? Degrees : Degrees * FMath::Sign(CrossProduct.Z);
 }
 
-void AShooterBaseCharacter::SetPlayerColor(const FLinearColor& Color)
-{
-	const auto MaterialInst = GetMesh()->CreateAndSetMaterialInstanceDynamic(0);
+// TODO: AI fire
+//void AShooterBaseCharacter::OnStartFire()
+//{
+//	if (IsRunning()) return;
+//	WeaponComponent->StartFire();
+//}
 
-	if (!MaterialInst) return;
-
-	MaterialInst->SetVectorParameterValue(MaterialColorName, Color);
-}
-
-
-
-void AShooterBaseCharacter::OnStartFire()
-{
-	if (IsRunning()) return;
-	//WeaponComponent->StartFire();
-}
-
+// call when charcter is dead
 void AShooterBaseCharacter::OnDeath()
 {
 	//UE_LOG(LogBaseCharacter, Display, TEXT("Is dead"));
-	//PlayAnimMontage(DeathAnimMontage);
-
 	GetCharacterMovement()->DisableMovement();
 
 	SetLifeSpan(5.0f);
 
 	GetCapsuleComponent()->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-	//WeaponComponent->StopFire();
-	//WeaponComponent->Zoom(false);
+	WeaponComponent->StopFire();
+	WeaponComponent->Zoom(false);
 
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	GetMesh()->SetSimulatePhysics(true);
@@ -100,21 +80,12 @@ void AShooterBaseCharacter::OnDeath()
 	UGameplayStatics::PlaySoundAtLocation(GetWorld(), DeathSound, GetActorLocation());
 }
 
+// call when health changed
 void AShooterBaseCharacter::OnHealthChanged(float Health, float HealthDeltd)
 {
 
 }
 
-void AShooterBaseCharacter::OnGroundLanded(const FHitResult& Hit)
-{
-	const auto FallVelocityZ = -GetVelocity().Z;
-	if (FallVelocityZ < LandedDamageVelocity.X) return;
-
-	const auto FallDamage = FMath::GetMappedRangeValueClamped(LandedDamageVelocity, LandedDamage, FallVelocityZ);
-	TakeDamage(FallDamage, FPointDamageEvent{}, nullptr, nullptr);
-
-	UE_LOG(LogBaseCharacter, Display, TEXT("Player %s recived landed damage: %f"), *GetName(), FallDamage);
-}
 
 
 

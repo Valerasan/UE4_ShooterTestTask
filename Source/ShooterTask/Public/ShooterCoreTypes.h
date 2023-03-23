@@ -2,8 +2,7 @@
 #include "ShooterCoreTypes.generated.h"
 // weapon
 
-
-
+// delegate call when clip is empty
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnClipEmptySignature, class AShooterBaseWeapon*)
 
 USTRUCT(BlueprintType) struct FAmmoData
@@ -19,9 +18,6 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
 		bool Infinite;
 };
-
-
-
 
 USTRUCT(BlueprintType)
 struct FDecalData
@@ -54,4 +50,16 @@ struct FImpactData
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Sound")
 		class USoundCue* ImpactSound;
+};
+
+USTRUCT(BlueprintType)
+struct FWeaponUIData
+{
+	GENERATED_USTRUCT_BODY()
+public:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
+		UTexture2D* MainIcon;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
+		UTexture2D* CrossHairIcon;
 };

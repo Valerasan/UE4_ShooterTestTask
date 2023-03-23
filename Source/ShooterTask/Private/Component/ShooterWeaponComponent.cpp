@@ -24,12 +24,26 @@ void UShooterWeaponComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	//checkf(WeaponData.Num() == WeaponNum, TEXT("Our chracter can hold only %i weapon items"), WeaponNum);
+	checkf(WeaponData.Num() == 1, TEXT("Our chracter must have one starting weapon"));
 
 	CurrentWeaponIndex = 0;
-	InitAnimations();
+	
+	auto EquipFinishedNotify = AnimUtils::FindNotifyByClass<UShooterEquipAnimNotify>(EquipAnimMontage);
+	if (EquipFinishedNotify)
+	{
+		EquipFinishedNotify->OnNotified.AddUObject(this, &UShooterWeaponComponent::OnEquipFinished);
+	}
+	else
+	{
+		//UE_LOG(LogWeaponComponent, Error, TEXT("Equip anim notify is forgotten to set"));
+		checkNoEntry();
+	}
+
+
+
 	SpawnWeapons();
-	//EquipWeapon(CurrentWeaponIndex);
+	EquipWeapon(CurrentWeaponIndex);
+	OneWeapon = Weapons.Num() == 1 ? true : false;
 }
 
 void UShooterWeaponComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -52,15 +66,31 @@ void UShooterWeaponComponent::SpawnWeapons()
 
 	for (TSubclassOf<AShooterBaseWeapon> OneWeaponData : WeaponData)
 	{
-		auto Weapon = GetWorld()->SpawnActor<AShooterBaseWeapon>(OneWeaponData);
-		if (!Weapon) return;
-
-		Weapon->OnClipEmpty.AddUObject(this, &UShooterWeaponComponent::OnEmptyClip);
-		Weapon->SetOwner(Chracter);
-		Weapons.Add(Weapon);
-
-		AttachWeaponToSocket(Weapon, Chracter->GetMesh(), WeaponArmorySocketName);
+		SpawnWeapon(OneWeaponData);
 	}
+}
+
+void UShooterWeaponComponent::SpawnWeapon(const TSubclassOf<AShooterBaseWeapon>& SpawnedWeapon)
+{
+	ACharacter* Chracter = Cast<ACharacter>(GetOwner());
+	if (!Chracter || !GetWorld()) return;
+
+	auto Weapon = GetWorld()->SpawnActor<AShooterBaseWeapon>(SpawnedWeapon);
+	if (!Weapon) return;
+
+	Weapon->OnClipEmpty.AddUObject(this, &UShooterWeaponComponent::OnEmptyClip);
+	Weapon->SetOwner(Chracter);
+	Weapons.Add(Weapon);
+	Weapon->SetActorHiddenInGame(true);
+
+	auto ReloadFinishedNotify = AnimUtils::FindNotifyByClass<UShooterRealodAnimNotify>(Weapon->ReloadAnimMontage);
+	if (!ReloadFinishedNotify)
+	{
+		//UE_LOG(LogWeaponComponent, Error, TEXT("Equip anim notify is forgotten to set"));
+		checkNoEntry();
+	}
+	ReloadFinishedNotify->OnNotified.AddUObject(this, &UShooterWeaponComponent::OnReloadFinished);
+
 }
 
 void UShooterWeaponComponent::AttachWeaponToSocket(AShooterBaseWeapon* Weapon, USceneComponent* SceneComponent, const FName& SocketName)
@@ -72,12 +102,12 @@ void UShooterWeaponComponent::AttachWeaponToSocket(AShooterBaseWeapon* Weapon, U
 
 void UShooterWeaponComponent::EquipWeapon(int32 WeaponIndex)
 {
-	if (WeaponIndex < 0 || WeaponIndex >= Weapons.Num())
+	if (WeaponIndex < 0 || WeaponIndex >= Weapons.Num() || OneWeapon)
 	{
 		//UE_LOG(LogWeaponComponent, Warning, TEXT("Invalid weapon index"));
 		return;
 	}
-
+	
 	ACharacter* Chracter = Cast<ACharacter>(GetOwner());
 	if (!Chracter) return;
 
@@ -85,7 +115,7 @@ void UShooterWeaponComponent::EquipWeapon(int32 WeaponIndex)
 	{
 		CurrentWeapon->Zoom(false);
 		CurrentWeapon->StopFire();
-		AttachWeaponToSocket(CurrentWeapon, Chracter->GetMesh(), WeaponArmorySocketName);
+		CurrentWeapon->SetActorHiddenInGame(true);
 	}
 	CurrentWeapon = Weapons[WeaponIndex];
 	//CurrentReloadAnimMontage = WeaponData[WeaponIndex].ReloadAnimMontage;
@@ -95,9 +125,10 @@ void UShooterWeaponComponent::EquipWeapon(int32 WeaponIndex)
 
 
 	CurrentReloadAnimMontage =  CurrentWeapon->ReloadAnimMontage;
-
 	AttachWeaponToSocket(CurrentWeapon, Chracter->GetMesh(), WeaponEquipSocketName);
 	EquipAnimInProgress = true;
+	CurrentWeapon->SetActorHiddenInGame(false);
+
 	PlayAnimMontage(EquipAnimMontage);
 
 }
@@ -127,8 +158,18 @@ void UShooterWeaponComponent::NextWeapon()
 {
 	if (!CanEquip()) return;
 	CurrentWeaponIndex = (CurrentWeaponIndex + 1) % Weapons.Num();
+	UE_LOG(LogWeaponComponent, Warning, TEXT("Index: %i"), CurrentWeaponIndex);
 	ReloadAnimInProgress = false;
+	EquipWeapon(CurrentWeaponIndex);
+}
 
+void UShooterWeaponComponent::PreviousWeapon()
+{
+	if (!CanEquip()) return;
+	int32 Index = (CurrentWeaponIndex - 1) % Weapons.Num();
+	CurrentWeaponIndex = Index == -1 ? Weapons.Num() - 1 : Index;
+	UE_LOG(LogWeaponComponent, Warning, TEXT("Index: %i"), CurrentWeaponIndex);
+	ReloadAnimInProgress = false;
 	EquipWeapon(CurrentWeaponIndex);
 }
 
@@ -169,6 +210,7 @@ bool UShooterWeaponComponent::TryToAddAmmo(TSubclassOf<AShooterBaseWeapon> Weapo
 	return false;
 }
 
+// TODO AI need ammo
 bool UShooterWeaponComponent::NeedAmmo(TSubclassOf<AShooterBaseWeapon> WeaponType)
 {
 	for (const auto Weapon : Weapons)
@@ -181,13 +223,13 @@ bool UShooterWeaponComponent::NeedAmmo(TSubclassOf<AShooterBaseWeapon> WeaponTyp
 	return false;
 }
 
+// if the same weapon is already in hand, then it will not pick it up, and if not, it will pick it up
 bool UShooterWeaponComponent::TryToAddWeapon(TSubclassOf<AShooterBaseWeapon> WeaponType)
 {
-
-
 	ACharacter* Chracter = Cast<ACharacter>(GetOwner());
 	if (!Chracter || !GetWorld()) return false;
-
+	
+	// checking if the same weapon
 	for (const auto Weapon : Weapons)
 	{
 		if (Weapon && Weapon->IsA(WeaponType))
@@ -195,24 +237,8 @@ bool UShooterWeaponComponent::TryToAddWeapon(TSubclassOf<AShooterBaseWeapon> Wea
 			return false;
 		}
 	}
-	auto TryWeapon = GetWorld()->SpawnActor<AShooterBaseWeapon>(WeaponType);
-	if (!TryWeapon) return false;
-
-	TryWeapon->OnClipEmpty.AddUObject(this, &UShooterWeaponComponent::OnEmptyClip);
-	TryWeapon->SetOwner(Chracter);
-	Weapons.Add(TryWeapon);
-
-	AttachWeaponToSocket(TryWeapon, Chracter->GetMesh(), WeaponArmorySocketName);
-	
-	auto ReloadFinishedNotify = AnimUtils::FindNotifyByClass<UShooterRealodAnimNotify>(TryWeapon->ReloadAnimMontage);
-	if (!ReloadFinishedNotify)
-	{
-		//UE_LOG(LogWeaponComponent, Error, TEXT("Equip anim notify is forgotten to set"));
-		checkNoEntry();
-	}
-	ReloadFinishedNotify->OnNotified.AddUObject(this, &UShooterWeaponComponent::OnReloadFinished);
-
-
+	OneWeapon = false;
+	SpawnWeapon(WeaponType);
 	return true;
 }
 
@@ -232,44 +258,18 @@ void UShooterWeaponComponent::PlayAnimMontage(UAnimMontage* Animation)
 	Chracter->PlayAnimMontage(Animation);
 }
 
-void UShooterWeaponComponent::InitAnimations()
-{
 
-	auto EquipFinishedNotify = AnimUtils::FindNotifyByClass<UShooterEquipAnimNotify>(EquipAnimMontage);
-	if (EquipFinishedNotify)
-	{
-		EquipFinishedNotify->OnNotified.AddUObject(this, &UShooterWeaponComponent::OnEquipFinished);
-	}
-	else
-	{
-		//UE_LOG(LogWeaponComponent, Error, TEXT("Equip anim notify is forgotten to set"));
-		checkNoEntry();
-	}
-
-	for (TSubclassOf<AShooterBaseWeapon> OneWeaponData : WeaponData)
-	{
-		auto ReloadFinishedNotify = AnimUtils::FindNotifyByClass<UShooterRealodAnimNotify>(OneWeaponData.GetDefaultObject()->ReloadAnimMontage);
-		if (!ReloadFinishedNotify)
-		{
-			//UE_LOG(LogWeaponComponent, Error, TEXT("Equip anim notify is forgotten to set"));
-			checkNoEntry();
-		}
-		ReloadFinishedNotify->OnNotified.AddUObject(this, &UShooterWeaponComponent::OnReloadFinished);
-	}
-}
-
+// call when anime Equip notify works
 void UShooterWeaponComponent::OnEquipFinished(USkeletalMeshComponent* MeshComp)
 {
 	ACharacter* Chracter = Cast<ACharacter>(GetOwner());
 	if (!Chracter || Chracter->GetMesh() != MeshComp) return;
 
-	//OnEmptyClip(CurrentWeapon);
-
 	EquipAnimInProgress = false;
 	//UE_LOG(LogWeaponComponent, Warning, TEXT("Equip finished"));
 	CurrentWeapon->IsNeedToReload();
 }
-
+// call when anime Reload notify works
 void UShooterWeaponComponent::OnReloadFinished(USkeletalMeshComponent* MeshComp)
 {
 	ACharacter* Chracter = Cast<ACharacter>(GetOwner());
@@ -282,8 +282,6 @@ void UShooterWeaponComponent::OnReloadFinished(USkeletalMeshComponent* MeshComp)
 
 bool UShooterWeaponComponent::CanFire() const
 {
-
-
 	return CurrentWeapon && !EquipAnimInProgress && !ReloadAnimInProgress;
 }
 
@@ -292,20 +290,19 @@ bool UShooterWeaponComponent::CanEquip() const
 	return !EquipAnimInProgress;
 }
 
-
-
 bool UShooterWeaponComponent::CanReload() const
 {
-	UE_LOG(LogWeaponComponent, Warning, TEXT("============================"));
-	UE_LOG(LogWeaponComponent, Warning, TEXT("Equip: %s"), EquipAnimInProgress ? TEXT("true") : TEXT("false"));
-	UE_LOG(LogWeaponComponent, Warning, TEXT("Reload: %s"), ReloadAnimInProgress ? TEXT("true") : TEXT("false"));
-	UE_LOG(LogWeaponComponent, Warning, TEXT("Can Reload: %s"), CurrentWeapon->CanReload() ? TEXT("true") : TEXT("false"));
-	UE_LOG(LogWeaponComponent, Warning, TEXT("============================"));
+	//UE_LOG(LogWeaponComponent, Warning, TEXT("============================"));
+	//UE_LOG(LogWeaponComponent, Warning, TEXT("Equip: %s"), EquipAnimInProgress ? TEXT("true") : TEXT("false"));
+	//UE_LOG(LogWeaponComponent, Warning, TEXT("Reload: %s"), ReloadAnimInProgress ? TEXT("true") : TEXT("false"));
+	//UE_LOG(LogWeaponComponent, Warning, TEXT("Can Reload: %s"), CurrentWeapon->CanReload() ? TEXT("true") : TEXT("false"));
+	//UE_LOG(LogWeaponComponent, Warning, TEXT("============================"));
 
 
 	return CurrentWeapon && !EquipAnimInProgress && !ReloadAnimInProgress && CurrentWeapon->CanReload();
 }
 
+// call when OnEmptyClip broadcast
 void UShooterWeaponComponent::OnEmptyClip(AShooterBaseWeapon* AmmoEmptyWeapon)
 {
 	if (!AmmoEmptyWeapon) return;
@@ -326,6 +323,7 @@ void UShooterWeaponComponent::OnEmptyClip(AShooterBaseWeapon* AmmoEmptyWeapon)
 	}
 }
 
+// reloads in hand
 void UShooterWeaponComponent::ChangeClip()
 {
 	if (!CanReload()) return;

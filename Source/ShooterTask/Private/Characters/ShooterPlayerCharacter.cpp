@@ -49,8 +49,10 @@ void AShooterPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerI
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, WeaponComponent, &UShooterWeaponComponent::StartFire);
 	PlayerInputComponent->BindAction("Fire", IE_Released, WeaponComponent, &UShooterWeaponComponent::StopFire);
 	PlayerInputComponent->BindAction("NextWeapon", IE_Pressed, WeaponComponent, &UShooterWeaponComponent::NextWeapon);
+	PlayerInputComponent->BindAction("PreviousWeapon", IE_Pressed, WeaponComponent, &UShooterWeaponComponent::PreviousWeapon);
 	//PlayerInputComponent->BindAction("Reload", IE_Pressed, WeaponComponent, &USTUWeaponComponent::Reload);
 
+	// TODO make zoom
 	/*DECLARE_DELEGATE_OneParam(FZoomInputSignature, bool)
 	PlayerInputComponent->BindAction<FZoomInputSignature>("Zoom", IE_Pressed, WeaponComponent, &USTUWeaponComponent::Zoom, true);
 	PlayerInputComponent->BindAction<FZoomInputSignature>("Zoom", IE_Released, WeaponComponent, &USTUWeaponComponent::Zoom, false);*/
@@ -70,6 +72,8 @@ void AShooterPlayerCharacter::MoveRight(float Amount)
 	AddMovementInput(GetActorRightVector(), Amount);
 }
 
+// TODO
+// call when chcracter is dead
 void AShooterPlayerCharacter::OnDeath()
 {
 	Super::OnDeath();

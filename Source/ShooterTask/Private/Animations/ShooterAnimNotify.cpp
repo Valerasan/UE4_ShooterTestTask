@@ -5,6 +5,7 @@
 
 void UShooterAnimNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
 {
+	// call delegate
 	OnNotified.Broadcast(MeshComp);
 	Super::Notify(MeshComp, Animation);
 }

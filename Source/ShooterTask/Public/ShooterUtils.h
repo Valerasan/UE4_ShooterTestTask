@@ -1,11 +1,11 @@
 #pragma once
 
-class STUUtils
+class ShooterUtils
 {
 
 public:
 	template <typename T>
-	static T* GetSTUPlayerComponent(AActor* PlyaerPawn)
+	static T* GetShooterPlayerComponent(AActor* PlyaerPawn)
 	{
 		if (!PlyaerPawn) return nullptr;
 

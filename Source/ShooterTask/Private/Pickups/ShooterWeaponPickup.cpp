@@ -1,13 +1,13 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
+#include "Pickups/ShooterWeaponPickup.h"
 #include "ShooterUtils.h"
 #include "Component/ShooterWeaponComponent.h"
-#include "Pickups/ShooterWeaponPickup.h"
 
 bool AShooterWeaponPickup::GivePikupTo(APawn* PlayrPawn)
 {
-	const auto HealthComponent = STUUtils::GetSTUPlayerComponent<UShooterWeaponComponent>(PlayrPawn);
-	if (!HealthComponent) return false;
+	const auto WeaponComponent = ShooterUtils::GetShooterPlayerComponent<UShooterWeaponComponent>(PlayrPawn);
+	if (!WeaponComponent) return false;
 
-	return HealthComponent->TryToAddWeapon(Weapon);
+	return WeaponComponent->TryToAddWeapon(Weapon);
 }

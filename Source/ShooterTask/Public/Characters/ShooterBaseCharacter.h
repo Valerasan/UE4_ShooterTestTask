@@ -11,15 +11,12 @@ class SHOOTERTASK_API AShooterBaseCharacter : public ACharacter
 {
 	GENERATED_BODY()
 public:
-	// Sets default values for this character's properties
-	//AShooterBaseCharacter(const FObjectInitializer& ObjInit);
 	AShooterBaseCharacter();
 
 protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")
 		class UShooterWeaponComponent* WeaponComponent;
-
 
 	UPROPERTY(EditDefaultsOnly, Category = "Damage")
 		FVector2D LandedDamageVelocity = FVector2D(900.f, 1200.f);
@@ -48,11 +45,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Movement")
 		float GetMovementDirection() const;
 
-	void SetPlayerColor(const FLinearColor& Color);
-
 private:
-	void OnStartFire();
-
-	UFUNCTION()
-		void OnGroundLanded(const FHitResult& Hit);
+	//void OnStartFire();
 };

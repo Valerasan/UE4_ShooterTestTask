@@ -13,7 +13,6 @@ UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class SHOOTERTASK_API UShooterWeaponComponent : public UActorComponent
 {
 	GENERATED_BODY()
-
 public:
 	UShooterWeaponComponent();
 
@@ -22,8 +21,10 @@ public:
 	bool IsFiring() const;
 
 	virtual void NextWeapon();
+	virtual void PreviousWeapon();
 	void Reload();
-
+	
+	// TODO
 	//bool GetWeaponUIData(FWeaponUIData& UIData) const;
 	bool GetAmmoData(FAmmoData& AmmoData) const;
 
@@ -32,21 +33,15 @@ public:
 
 	bool TryToAddWeapon(TSubclassOf<AShooterBaseWeapon> WeaponType);
 
-
+	//TODO
 	void Zoom(bool Enabled);
 
 protected:
-	//UPROPERTY(EditDefaultsOnly, Category = "Weapon")
-	//	TArray<FWeaponData> WeaponData;
-
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	TArray<TSubclassOf<AShooterBaseWeapon>> WeaponData;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 		FName WeaponEquipSocketName = "WeaponSocket";
-
-	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
-		FName WeaponArmorySocketName = "ArmorySocket";
 
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 		UAnimMontage* EquipAnimMontage;
@@ -73,10 +68,12 @@ private:
 		UAnimMontage* CurrentReloadAnimMontage = nullptr;
 
 	bool EquipAnimInProgress = false;
+	// if it is false, then there is only one weapon in the hand 
+	// and the animation of the equium does not work
+	bool OneWeapon = false;
 
-
-	void InitAnimations();
 	void SpawnWeapons();
+	void SpawnWeapon(const TSubclassOf<AShooterBaseWeapon>& SpawnedWeapon);
 
 	void AttachWeaponToSocket(AShooterBaseWeapon* Weapon, USceneComponent* SceneComponent, const FName& SocketName);
 
