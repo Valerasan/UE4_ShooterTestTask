@@ -113,7 +113,7 @@ void UShooterWeaponComponent::EquipWeapon(int32 WeaponIndex)
 
 	if (CurrentWeapon)
 	{
-		CurrentWeapon->Zoom(false);
+		//CurrentWeapon->Zoom(false);
 		CurrentWeapon->StopFire();
 		CurrentWeapon->SetActorHiddenInGame(true);
 	}
@@ -237,13 +237,13 @@ bool UShooterWeaponComponent::TryToAddWeapon(TSubclassOf<AShooterBaseWeapon> Wea
 	return true;
 }
 
-void UShooterWeaponComponent::Zoom(bool Enabled)
-{
-	if (CurrentWeapon)
-	{
-		CurrentWeapon->Zoom(Enabled);
-	}
-}
+//void UShooterWeaponComponent::Zoom(bool Enabled)
+//{
+//	if (CurrentWeapon)
+//	{
+//		CurrentWeapon->Zoom(Enabled);
+//	}
+//}
 
 bool UShooterWeaponComponent::ExistsWeapon(TSubclassOf<AShooterBaseWeapon> CheckWeapon)
 {

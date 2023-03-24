@@ -34,7 +34,7 @@ public:
 	bool TryToAddWeapon(TSubclassOf<AShooterBaseWeapon> WeaponType);
 
 	//TODO
-	void Zoom(bool Enabled);
+	//void Zoom(bool Enabled);
 	bool ExistsWeapon(TSubclassOf<AShooterBaseWeapon> CheckWeapon);
 
 protected:

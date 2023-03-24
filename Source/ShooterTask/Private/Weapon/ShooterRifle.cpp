@@ -42,18 +42,18 @@ void AShooterRifle::StopFire()
 	SetFXActive(false);
 }
 
-void AShooterRifle::Zoom(bool Enabled)
-{
-	const auto Controller = Cast<APlayerController>(GetControllerChracter());
-	if (!Controller || !Controller->PlayerCameraManager) return;
-
-	if (Enabled)
-	{
-		DefaultCameraFOV = Controller->PlayerCameraManager->GetFOVAngle();
-	}
-
-	Controller->PlayerCameraManager->SetFOV(Enabled ? FOVZoomAngle : DefaultCameraFOV);
-}
+//void AShooterRifle::Zoom(bool Enabled)
+//{
+//	const auto Controller = Cast<APlayerController>(GetControllerChracter());
+//	if (!Controller || !Controller->PlayerCameraManager) return;
+//
+//	if (Enabled)
+//	{
+//		DefaultCameraFOV = Controller->PlayerCameraManager->GetFOVAngle();
+//	}
+//
+//	Controller->PlayerCameraManager->SetFOV(Enabled ? FOVZoomAngle : DefaultCameraFOV);
+//}
 
 void AShooterRifle::MakeShot()
 {
